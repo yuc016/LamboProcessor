@@ -61,35 +61,55 @@ with open(infile_name, 'r') as infile, open(outfile_name, 'r') as outfile:
                 op1Str = bStr(int(args[1]))
                 op2Str = bStr(int(args[2]))
                 outfile.write("000" + op1Str + op2Str)
-            elif op == "BGE" or op == "B":
-                pass
+            elif op == "BGE":
+                op1Str = bStr(int(args[1]))
+                outfile.write("0011" + op1Str)
+            elif op == "B":
+                op1Str = bStr(int(args[1]))
+                outfile.write("0010" + op1Str)
             elif op == "LDR":
-                pass
+                op1Str = bStr(int(args[1]))
+                op2Str = bStr(int(args[2]))
+                outfile.write("010" + op1Str + op2Str)
             elif op == "STR":
-                pass
+                op1Str = bStr(int(args[1]))
+                op2Str = bStr(int(args[2]))
+                outfile.write("011" + op1Str + op2Str)
             elif op == "XOR":
-                pass
+                op1Str = bStr(int(args[1]))
+                op2Str = bStr(int(args[2]))
+                outfile.write("100" + op1Str + op2Str)
             elif op == "ADD":
-                pass
+                op1Str = bStr(int(args[1]))
+                op2Str = bStr(int(args[2]))
+                outfile.write("101" + op1Str + op2Str)
             elif op == "SUB":
-                pass
+                op1Str = bStr(int(args[1]))
+                op2Str = bStr(int(args[2]))
+                outfile.write("110" + op1Str + op2Str)
             elif op == "LSL":
-                pass
-            elif op == "SHIFT":
-                pass
-            elif op == "HALT":
-                pass
-            elif op == "RDX":
-                pass
-            elif op == "MOV":
-                pass
+                op1Str = bStr(int(args[1]))
+                op2Str = bStr(int(args[2]))
+                outfile.write("111" + op1Str + op2Str)
+            elif op == "SHIFT":                          # Special Case "SHIFT"
+                outfile.write("001010000")
+            elif op == "HALT":                           # Special Case "HALT"
+                outfile.write("001110000")                           
+            elif op == "RDX":                            # Special Case "RDX"
+                op1Str = bStr(int(args[1]))              
+                outfile.write("111110" + op1Str)
+            elif op == "MOV":                            # Special operation "MOV"
+                op1Str = bStr(int(args[1]))              
+                outfile.write("111111" + op1Str)
         except(IndexError):
             exit("Invalid format: " + args[0] + " " + args[1] + " " + args[2] + '\n')
         
 
-
-
 print("Assembling complete with no error!")
+
+
+
+
 
 
 
