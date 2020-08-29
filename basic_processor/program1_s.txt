@@ -1,0 +1,59 @@
+    MOV r1, #0                      // r1: msgPt = 0
+    MOV r2, #61                     // r2: encPt = 61
+    LDR r3, [r2]                    // r3: numSpace = data[encPt++]
+
+    // If (numSpace > 15) numSpace = 15;
+    MOV r4, #10                     // r4 = 10
+    CMP r3, r4                      
+    BGE a                           // if numSpace >= 10 go a
+
+    MOV r3, #10                      // numSpace = 10
+    B b
+
+a:                                     
+    MOV r4, #15                     // r4 = 15
+    CMP r4, r3                       
+    BGE b		                    // if 15 >= numSpace go b
+    MOV r3, #15                     // r3 = 15
+
+b:
+    LDR r7, [r2] //r7: tap          // r2: 63
+    LDR r8, [r2] //r8: lfsr         // r2: 64
+    MOV r5, #1
+    
+c:                                  // Prepend spaces        
+    MOV r4, #0
+    XOR r4, r8                      // r4 = lfsr
+    STR r4, [r2]                    // data[encPt++] = r4
+
+	SHIFT!                          // Call LFSR hardware module
+
+    SUB r3, r5                      // numSpace--
+    CMP r3, r1                      // while numSpace >= 0
+    BGE c
+
+    MOV r3, #60                     // r3 = 60
+    MOV r6, #32
+
+d:                                  // Encrypt message           
+	LDR r4, [r1]                    // r4 = data[msgPt++]      
+    SUB r4, r6                      // r4 -= 0x20
+	XOR r4, r8                      // r4 ^= lfsr
+
+    // Parity bit
+    SUB r5, r5
+    ADD r5, r4
+    RDX r5                          // r5 = ^(r4)
+	LSL r5, #7                      // r5 = r5 << 7
+	ADD r4, r5                      // r4 += r5
+    
+	STR r4, [r2]                    // data[encPt++] = r4
+
+	SHIFT!                          // Call LFSR hardware module
+    
+    CMP r3, r1                      // while 60 >= msgPt
+	BGE d       
+
+
+    HALT!
+
