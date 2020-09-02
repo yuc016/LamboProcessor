@@ -87,6 +87,7 @@ module encrypt_tb ()        ;
       msg_padded1[j] = 8'h00;          //   but subtract 0x20 from space character = 0x20
     for(int l=0; l<strlen; l++)        // overwrite up to 52 of these spaces w/ message itself
       msg_padded1[pre_length+l] = str1[l] - 8'h20;  // subtract 20 from each ASCII value
+    lfsr1[0] = LFSR_ptrn[pt_no];
 // compute the LFSR sequence
     for (int ii=0;ii<63;ii++)
       lfsr1[ii+1] = {(lfsr1[ii][5:0]),(^(lfsr1[ii]&lfsr_ptrn))};

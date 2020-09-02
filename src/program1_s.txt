@@ -1,6 +1,7 @@
     MOV r1, #0                      // r1: msgPt = 0
     MOV r2, #61                     // r2: encPt = 61
     LDR r3, [r2]                    // r3: numSpace = data[encPt++]
+    INC r2
 
     // If (numSpace > 15) numSpace = 15;
     MOV r4, #10                     // r4 = 10
@@ -18,16 +19,27 @@ a:
 
 b:
     LDR r7, [r2] //r7: tap          // r2: 63
+    INC r2
     LDR r8, [r2] //r8: lfsr         // r2: 64
-    MOV r5, #1
+    INC r2
+    MOV r4, #1
+    SUB r3, r4
     
 c:                                  // Prepend spaces        
     MOV r4, #0
     XOR r4, r8                      // r4 = lfsr
+    SUB r5, r5
+    ADD r5, r4
+    RDX r5                          // r5 = ^(r4)
+	LSL r5, #7                      // r5 = r5 << 7
+	ADD r4, r5                      // r4 += r5
+
     STR r4, [r2]                    // data[encPt++] = r4
+    INC r2
 
-	SHIFT!                          // Call LFSR hardware module
+	SHIFT                           // Call LFSR hardware module
 
+    MOV r5, #1
     SUB r3, r5                      // numSpace--
     CMP r3, r1                      // while numSpace >= 0
     BGE c
@@ -36,7 +48,8 @@ c:                                  // Prepend spaces
     MOV r6, #32
 
 d:                                  // Encrypt message           
-	LDR r4, [r1]                    // r4 = data[msgPt++]      
+	LDR r4, [r1]                    // r4 = data[msgPt++]    
+    INC r1  
     SUB r4, r6                      // r4 -= 0x20
 	XOR r4, r8                      // r4 ^= lfsr
 
@@ -48,12 +61,13 @@ d:                                  // Encrypt message
 	ADD r4, r5                      // r4 += r5
     
 	STR r4, [r2]                    // data[encPt++] = r4
+    INC r2
 
-	SHIFT!                          // Call LFSR hardware module
+	SHIFT                           // Call LFSR hardware module
     
     CMP r3, r1                      // while 60 >= msgPt
 	BGE d       
 
 
-    HALT!
+    HALT 
 

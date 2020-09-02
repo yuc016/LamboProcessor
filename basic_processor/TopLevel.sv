@@ -14,6 +14,7 @@ wire [9:0] PgmCtr, PCTarg;
 wire [8:0] Instruction;
 wire [7:0] ReadA, ReadB;    // reg_file outputs
 wire [7:0] InA, InB, 	    // ALU operand inputs
+           InConstant,      // Sign extended constant from instruction
            ALU_out;         // ALU result
 wire [7:0] RegWriteValue,   // data in to reg file
            MemWriteValue,   // data in to data_memory
@@ -28,8 +29,11 @@ wire Immediate,
      MemToReg,
      MemWriteEn,
      RegWriteEn,
+     Inc,
      BranchEn,
-     ConditionBranch;
+     ConditionBranch,
+     GE_Flag,
+     GE_FlagSet;
 
 logic[15:0] CycleCt;
 
@@ -65,21 +69,26 @@ Ctrl Ctrl (
     .RDX          (RDX),
     .MemToReg     (MemToReg),
     .RegWriteEn   (RegWriteEn),
-    .MemWriteEn   (MemWriteEn)
+    .MemWriteEn   (MemWriteEn),
+    .Inc          (Inc)
 );
 
-assign Waddr = (RDX | RegSet) ? Instruction[2:0] : Instruction[5:3];
+assign Waddr = (RDX | RegSet | Inc) ? Instruction[2:0] : Instruction[5:3];
 
 // Register file -- holds processor's registers
 RegFile #(.W(8),.D(3)) RF (	// D(3) makes this 8 elements deep
     .Clk,
     .Reset        (Reset),
     .RegSet       (RegSet),
+    .Start        (Start),
+    .Shift        (Shift),
+    .GE_FlagSet   (GE_FlagSet),
     .WriteEn      (RegWriteEn), 
     .RaddrA       (Instruction[5:3]),
     .RaddrB       (Instruction[2:0]), 
     .Waddr        (Waddr),
     .DataIn       (RegWriteValue), 
+    .GE_Flag      (GE_Flag),
     .IsLoadingReg (IsLoadingReg),
     .DataOutA     (ReadA), 
     .DataOutB     (ReadB)
@@ -92,19 +101,21 @@ assign RegWriteValue = IsLoadingReg ? Instruction :
                        MemToReg ? MemReadValue : ALU_out;
 // Arithematic Logic Unit -- performs operations on operands and spits out result
 ALU ALU  (
-    .InA     (InA),
-    .InB     (InB), 
-    .Opcode  (Instruction[8:6]),
-    .RDX     (RDX),
-    .Shift   (Shift),
-    .Out     (ALU_out),
-    .GE_Flag (GE_Flag)
+    .InA        (InA),
+    .InB        (InB), 
+    .Opcode     (Instruction[8:6]),
+    .RDX        (RDX),
+    .Shift      (Shift),
+    .Out        (ALU_out),
+    .GE_FlagSet (GE_FlagSet)
 );
+
+assign MemWriteValue = ReadA;
 
 // Data memory -- holds memory registers
 DataMem DM(
-    .DataAddress  (ReadA), 
-    .WriteEn      (MemWrite), 
+    .DataAddress  (InB), 
+    .WriteEn      (MemWriteEn), 
     .DataIn       (MemWriteValue), 
     .DataOut      (MemReadValue), 
     .Clk,

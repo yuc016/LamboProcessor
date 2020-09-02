@@ -1,0 +1,17 @@
+BGE a
+MOV r4, #123
+MOV r4, #123
+MOV r4, #123
+RDX r6
+HALT
+SHIFT
+B B
+LSL r2, #7
+Sub r3, r8
+add r1, r5
+b:
+Xor r2, r2
+a:
+STR r1, [r7]
+LDR r2, [r3]
+CMP r2, r2

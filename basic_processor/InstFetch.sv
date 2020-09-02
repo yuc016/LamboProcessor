@@ -12,7 +12,7 @@ module InstFetch(
     output logic [9:0] ProgCtr           // the program counter register itself
 );
 
-wire [9:0] ExtendedOffset = {BranchOffset[4] * 4, BranchOffset[4:0]};
+wire [9:0] ExtendedOffset = 10'(signed'(BranchOffset));
 wire BranchTaken = BranchEn & (!ConditionBranch | GE_Flag);
 	 
 // program counter can clear to 0, increment, or jump
