@@ -24,7 +24,7 @@ module ALU (
     case(Opcode)
       _CMP : begin
             GE_FlagSet = (Sub[7] == 0) ? 1 : 0;
-            Out = InB + 1;
+            Out = InB + 1; // For Inc
         end
       _BRANCH: Out = Shift ? LFSR_Out : 0;
       _XOR : Out = InA ^ InB;

@@ -32,7 +32,7 @@ assign RegSet = (Opcode == _LSHIFT) & (Instruction[5:3] == 3'b111) & !IsLoadingR
 // Branch related control
 assign ConditionBranch = Instruction[5];
 assign BranchOpSpecial = ~|(Instruction[3:0]);
-assign BranchEn = (Opcode == _BRANCH) & !BranchOpSpecial &!IsLoadingReg;
+assign BranchEn = (Opcode == _BRANCH) & !BranchOpSpecial & !IsLoadingReg;
 
 // Special op with abnormal opcode
 assign Halt = (Opcode == _BRANCH) & ConditionBranch & BranchOpSpecial & !IsLoadingReg;

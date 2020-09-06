@@ -24,8 +24,8 @@ module decrypt_tb ()        ;
 //  string     str1  = " Knowledge comes, but wisdom lingers.    ";   // alternative inputs
 //  string     str1  = "  01234546789abcdefghijklmnopqrstuvwxyz. ";   //   (make up your own,
 //  string     str1  = "  f       A joke is a very serious thing.";   // 	as well)
-//  string     str1  = "                           Ajok          ";   // 
- string     str1  = " Knowledge comes, but wisdom lingers.    ";   // 
+ string     str1  = "                           Ajok          ";   // 
+//  string     str1  = " Knowledge comes, but wisdom lingers.    ";   // 
 
 // displayed encrypted string will go here:
   string     str_enc1[64];         // program 1 desired output will go here
@@ -43,14 +43,14 @@ module decrypt_tb ()        ;
   assign LFSR_ptrn[7] = 7'h7E;
   assign LFSR_ptrn[8] = 7'h7B;
   always_comb begin
-    pt_no = 4; //$random>>22;      // or pick a specific one
+    pt_no = 8; //$random>>22;      // or pick a specific one
     if(pt_no>8) pt_no = 0;		   // restrict to 0 through 8 (our legal patterns)
   end    
   assign lfsr_ptrn = LFSR_ptrn[pt_no];  // engage the selected pattern
 
 // now select a starting LFSR state -- any nonzero value will do
   always_comb begin					   
-    LFSR_init = $random>>2;          // or set a value, such as 7'b1, for debug
+    LFSR_init = 7'b0010110;          // or set a value, such as 7'b1, for debug
     if(!LFSR_init) LFSR_init = 7'b1; // prevents illegal starting state = 7'b0; 
   end
 

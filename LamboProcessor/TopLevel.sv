@@ -75,7 +75,9 @@ Ctrl Ctrl (
 );
 
 assign Waddr = (RDX | RegSet | Inc) ? Instruction[2:0] : Instruction[5:3];
-
+assign RegWriteValue = IsLoadingReg ? Instruction : 
+                       MemToReg ? MemReadValue : ALU_out;
+                       
 // Register file -- holds processor's registers
 RegFile #(.W(8),.D(3)) RF (	// D(3) makes this 8 elements deep
     .Clk,
@@ -98,8 +100,7 @@ RegFile #(.W(8),.D(3)) RF (	// D(3) makes this 8 elements deep
 assign InA = ReadA;
 assign InConstant = {5'b0, Instruction[2:0]};
 assign InB = Immediate ? InConstant : ReadB;
-assign RegWriteValue = IsLoadingReg ? Instruction : 
-                       MemToReg ? MemReadValue : ALU_out;
+
 // Arithematic Logic Unit -- performs operations on operands and spits out result
 ALU ALU  (
     .InA        (InA),

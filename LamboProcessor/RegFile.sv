@@ -20,9 +20,9 @@ module RegFile #(parameter W=8, D=4)(
 );
 
 // W bits wide and 2**4 registers deep 	 
+logic [W-1:0] Registers[2**D];
 logic IsLoading, GE_FlagReg;
 logic [D-1:0] LoadingReg;
-logic [W-1:0] Registers[2**D];
 
 wire [D-1:0] Waddr_final;
 

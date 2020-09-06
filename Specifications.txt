@@ -167,3 +167,7 @@ Assembly Example:
 |    MOV reg                             |
 |------------Quick Reference-------------|
 
+
+MOV r2, #128
+111111001
+000100000

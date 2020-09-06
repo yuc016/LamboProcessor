@@ -98,7 +98,7 @@
     MOV r3, #32
     MOV r4, #127
     
-  l:
+  decrypt:
     LDR r6, [r2]
     INC r2
 
@@ -107,29 +107,31 @@
     RDX r5                          // r5 = ^(r6)
     SUB r3, r3
     CMP r3, r5
-    BGE o:                          // go o if r5 is 0
+    BGE no_error:                   // go no_error if r5 is 0
 
     MOV r6, #128                    // Error char
-    B p
+    B write_mem
 
   q:
-    B l                             // Branch pitstop
+    B decrypt                       // Branch pitstop
 
-  o:    
+  no_error:    
     XOR r6, r8
     MOV r3, #32
     ADD r6, r3                      // byte = enc ^ lfsr + 0x20
 
     MOV r5, #127
     CMP r5, r6
-    BGE p
+    BGE write_mem
     INC r5
     SUB r6, r5
     
-  p:
+  write_mem:
     STR r6, [r1]                    // data[msgPt++] = byte
     INC r1
 
     SHIFT
     CMP r4, r2                      // while encPt <= 127
     BGE q
+
+    HALT

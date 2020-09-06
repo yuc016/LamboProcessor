@@ -20,11 +20,11 @@ module decrypt_depad_tb ()        ;
 // note in practice your design should be able to handle ANY ASCII string that is
 //  restricted to characters between space (0x20) and script f (0x9f) and shorter than 
 //  53 characters in length
-  string     str1  = "Mr. Watson, come here. I want to see you.";     // sample program 1 input
+//   string     str1  = "Mr. Watson, come here. I want to see you.";     // sample program 1 input
 //  string     str1  = " Knowledge comes, but wisdom lingers.    ";   // alternative inputs
 //  string     str1  = "  01234546789abcdefghijklmnopqrstuvwxyz. ";   //   (make up your own,
-//  string     str1  = "  f       A joke is a very serious thing.";   // 	as well)
-//  string     str1  = "                           Ajok          ";   // 
+ string     str1  = "  f       A joke is a very serious thing.";   // 	as well)
+//  string     str1  = "      Ajok          ";   // 
 //  string     str1  = " Knowledge comes, but wisdom lingers.    ";   // 
 
 // displayed encrypted string will go here:
@@ -46,7 +46,7 @@ module decrypt_depad_tb ()        ;
   assign LFSR_ptrn[7] = 7'h7E;
   assign LFSR_ptrn[8] = 7'h7B;
   always_comb begin
-    pt_no = 0; //$random>>22;      // or pick a specific one
+    pt_no = 8; //$random>>22;      // or pick a specific one
     if(pt_no>8) pt_no = 0;		   // restrict to 0 through 8 (our legal patterns)
   end    
   assign lfsr_ptrn = LFSR_ptrn[pt_no];  // engage the selected pattern
@@ -64,7 +64,7 @@ module decrypt_depad_tb ()        ;
   end
 
 // ***** instantiate your own top level design here *****
-  top_level dut(
+  TopLevel dut(
     .Clk     (clk  ),   // input: use your own port names, if different
     .Reset    (init ),   // input: some prefer to call this ".reset"
     .Start     (start),   // input: launch program
@@ -78,6 +78,7 @@ module decrypt_depad_tb ()        ;
 //   your data_mem here -- the upper addresses are reserved for your use
 //    dut.data_mem.DM[128]=8'hfe;   //whatever constants you want	
    $readmemb("program3_exe.txt", dut.IR.inst_rom);
+    file_no = $fopen("msg_decoder_err_correct.txt","w");		 // create your output file
     #0ns strlen = str1.len;       // length of string 1 (# characters between " ")
     if(strlen>52) strlen = 52;          // clip message at 52 characters
     for(space=0;space<24;space++)		// count leading spaces in message
@@ -120,6 +121,8 @@ module decrypt_depad_tb ()        ;
 //    dut.DM.Core[61] = pre_length;     // number of bytes preceding message
 //    dut.DM.Core[62] = lfsr_ptrn;      // LFSR feedback tap positions (9 possible ptrns)
 //    dut.DM.Core[63] = LFSR_init;      // LFSR starting state (nonzero)
+    #20ns init  = 1'b0;				  // suggestion: reset = 1 forces your program counter to 0
+	#10ns start = 1'b0; 			  //   request/start = 1 holds your program counter 
     for(int m=0; m<24; m++)             // load first 24 characters of encrypted message into data memory
       dut.DM.Core[m+64] = msg_crypto1[m];
     for(int n=24; n<64; n++) begin	  	// load subsequent, possibly corrupt, encrypted message into data memory
@@ -127,9 +130,7 @@ module decrypt_depad_tb ()        ;
       dut.DM.Core[n+64] = msg_crypto1[n]^(1<<flipper);
       if(flipper<8) flipped[n]=1;
 	end
-    #20ns init  = 1'b0;				  // suggestion: reset = 1 forces your program counter to 0
-	#10ns start = 1'b0; 			  //   request/start = 1 holds your program counter 
-    #60ns;                            // wait for 6 clock cycles of nominal 10ns each
+   #60ns;                            // wait for 6 clock cycles of nominal 10ns each
     wait(done);                       // wait for DUT's ack/done flag to go high
     #10ns $fdisplay(file_no,"");
     $fdisplay(file_no,"program 2:");
@@ -137,20 +138,20 @@ module decrypt_depad_tb ()        ;
 // ***** use your instance name for data memory and its internal core *****
     for(int n=0; n<64; n++)	begin
       if(flipped[n+pre_length+space]) begin
-        if(dut.DM.Core[n][7]) begin
-          $display("error successfully flagged");
+        if(dut.DM.Core[n] == 8'h80) begin
+          $fdisplay(file_no, "%d bench msg: %s %h dut msg: %h (error successfully flagged)", 
+                    n, msg_padded1[n+pre_length+space][6:0]+8'h20, msg_padded1[n+pre_length+space], dut.DM.Core[n]);
           score++;
         end  
       end
-	  else if({flipped[n+pre_length+space],msg_padded1[n+pre_length+space][6:0]}
-	         == dut.DM.Core[n])	begin
+	  else if({msg_padded1[n+pre_length+space][6:0]} == dut.DM.Core[n])	begin
         $fdisplay(file_no,"%d bench msg: %s %h dut msg: %h",
-          n, msg_padded1[n+pre_length+space][6:0]+8'h20, msg_padded1[n], dut.DM.Core[n]);
+          n, msg_padded1[n+pre_length+space][6:0]+8'h20, msg_padded1[n+pre_length+space], dut.DM.Core[n]);
 		score++;
 	  end
       else
         $fdisplay(file_no,"%d bench msg: %s %h dut msg: %h  OOPS!",
-          n, msg_padded1[n+pre_length+space][6:0]+8'h20, msg_padded1[n], dut.DM.Core[n]);
+          n, msg_padded1[n+pre_length+space][6:0]+8'h20, msg_padded1[n+pre_length+space], dut.DM.Core[n]);
     end
     $fdisplay(file_no,"score = %d/64",score);
     #20ns $fclose(file_no);
