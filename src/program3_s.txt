@@ -93,11 +93,38 @@
     HALT                            // First 10 bytes def have corruption
   
   j:
-    MOV r2, #64
-    LDR r8, [r2]
     MOV r3, #32
     MOV r4, #127
-    
+    SHIFT
+
+  skip_space:                      // |-----------LOOP skip space------------|  
+    LDR r6, [r2]
+    INC r2
+    CMP r4, r6
+    BGE w
+    MOV r5, #1
+    SUB r6, r5
+    SUB r6, r4
+  w:
+    SUB r6, r8
+    CMP r6, r1
+    BGE i
+    B u       
+  v:
+    B skip_space                     
+  i:
+    CMP r1, r6
+    BGE k
+    B u
+  k:
+    SHIFT
+    CMP r4, r2                      // while encPt <= 127
+    BGE v                           // |-----------LOOP skip_space------------|
+
+  u:
+    MOV r5, #1
+    SUB r2, r5
+
   l:
     LDR r6, [r2]
     INC r2
@@ -119,13 +146,6 @@
     XOR r6, r8
     MOV r3, #32
     ADD r6, r3                      // byte = enc ^ lfsr + 0x20
-
-    MOV r5, #127
-    CMP r5, r6
-    BGE p
-    INC r5
-    SUB r6, r5
-    
   p:
     STR r6, [r1]                    // data[msgPt++] = byte
     INC r1
@@ -133,3 +153,16 @@
     SHIFT
     CMP r4, r2                      // while encPt <= 127
     BGE q
+
+    MOV r4, #63
+  m:
+    SHIFT
+    SUB r6, r6
+    XOR r6, r8
+    ADD r6, r3                      // byte = enc ^ lfsr + 0x20
+    STR r6, [r1]                    // data[msgPt++] = byte
+    INC r1
+    CMP r4, r1                      // while msgPt <= 63
+    BGE m
+
+    HALT 

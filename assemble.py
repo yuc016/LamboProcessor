@@ -38,7 +38,7 @@ def bStr(i, nine_bit=False, five_bit=False):
     elif i == 8:
         return "111"
     else:
-        exit("Invalid format: " + args[0] + " " + args[1] + " " + args[2] + '\n')
+        exit("Invalid register " + str(i) + " for operation " + args[0] + '\n')
 
 # MAIN
 
@@ -58,7 +58,7 @@ with open(infile_name, 'r') as infile:
     line = infile.readline()
     while line:
         line = line.upper()
-        for i in range(1, 10):
+        for i in range(1, 9):
             line = line.replace("R" + str(i), str(i))
         line = line.replace("#", '')
         line = line.replace(",", '')
@@ -128,11 +128,11 @@ with open(infile_name, 'r') as infile:
                 op1Str = bStr(int(args[1])) 
                 inst.append("000111" + op1Str + "\n")             
             else:
-                exit("Invalid format: " + args[0] + " " + args[1] + " " + args[2] + '\n')
+                exit("Invalid Operation: " + args[0] + '\n')
             
             num_inst += 1
         except(IndexError):
-            exit("Invalid format: " + args[0] + " " + args[1] + " " + args[2] + '\n')
+            exit("Invalid format for: " + args[0] + "at instruction " + num_inst + '\n')
 
 
 print(branch_dst)
@@ -143,13 +143,11 @@ for i in range(0, len(inst)):
         offset = branch_dst[branch_args[2]] - int(branch_args[1])
         offset_str = bStr(branch_dst[branch_args[2]] - int(branch_args[1]), False, True)
         inst[i] = branch_args[0] + offset_str + ("\n")
-        
 
 
 with open(outfile_name, 'w') as outfile:
     for i in range(0, len(inst)):
         outfile.write(inst[i])
-
 
 print("Assembling complete with no error!")
 
