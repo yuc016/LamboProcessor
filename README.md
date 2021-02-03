@@ -1,5 +1,0 @@
-
-
-First obstacle in the project is when assigning the bits to instructions, we ran out of the available bits since I allocated 3 bits to opcode and register and decided to use a reg-reg architecture. The work around is to overload some opcode to do different types of instruction sacrificing the operations supported for some registers, namely the LFSR pattern and LFSR register (r7&r8). This design decision also complicated my control logic and we spend some time to handle the special cases. We also implemented MOV instruction in two cycles. First the program need to specify which register to set with instruction 111111<reg>, this will set some internal flags. In the next cycle, the instruction will be intepreted as a constant and be set to the register specified in the previous cycle.
-
-https://ucsd.zoom.us/rec/share/syFkoV1E-NSLyuHmQKkKhTQXgYJmMttcNkpmaNbBBG3TahKjgzFhc8QnUraE8xN5.00yppUbTwksx7cps Passcode: XTf4i?Yt
